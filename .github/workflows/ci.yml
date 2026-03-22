@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend — lint, format, test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: askfolio_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Run tests
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5433/askfolio_test
+          JWT_SECRET: ci-test-secret
+          OLLAMA_BASE_URL: http://localhost:11434
+          OLLAMA_LLM_MODEL: qwen2.5:14b
+          OLLAMA_EMBED_MODEL: nomic-embed-text
+          UPLOAD_DIR: /tmp/askfolio-uploads
+          S3_REGION: us-east-1
+          S3_BUCKET: ""
+          MAX_CHUNK_SIZE: "100"
+          CHUNK_OVERLAP: "20"
+          VECTOR_DIMENSIONS: "768"
+          RETRIEVAL_TOP_K: "15"
+          HISTORY_MESSAGE_LIMIT: "10"
+          SUMMARISE_AFTER: "20"
+        run: npm test
+
+  frontend:
+    name: Frontend — lint, format, build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build

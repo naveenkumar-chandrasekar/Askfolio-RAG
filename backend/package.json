@@ -1,0 +1,50 @@
+{
+  "name": "askfolio-backend",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:setup": "node scripts/setup-db.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@aws-sdk/client-s3": "^3.1014.0",
+    "@aws-sdk/s3-request-presigner": "^3.1014.0",
+    "@fastify/cors": "^11.2.0",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/multipart": "^9.4.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.1",
+    "fast-xml-parser": "^5.5.8",
+    "fastify": "^5.8.2",
+    "fastify-plugin": "^5.1.0",
+    "jszip": "^3.10.1",
+    "mammoth": "^1.12.0",
+    "openai": "^6.32.0",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.20.0",
+    "tesseract.js": "^7.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.1",
+    "vitest": "^4.1.0"
+  }
+}
