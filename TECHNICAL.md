@@ -193,11 +193,20 @@ Chunks are embedded in batches of 20 (to avoid overwhelming local Ollama). Each 
 
 ### 5. Storage
 
-After ingestion, the original file is:
-- **Dev:** Saved to `./uploads/` on local disk
-- **Prod:** Uploaded to S3 via `@aws-sdk/client-s3`; `file_path` stores the S3 object key
+File storage happens across two phases:
 
-`lib/storage.js` supports LocalStack for local S3 simulation (`LOCALSTACK_ENDPOINT`).
+**On upload (before ingestion):**
+1. File is always written to local disk first (`UPLOAD_DIR/timestamp-filename`) — the ingestion pipeline reads from this local path
+2. If `S3_BUCKET` is configured, the file is also uploaded to S3 (or LocalStack if `LOCALSTACK_ENDPOINT` is set)
+3. `file_path` in the DB is set to the S3 key if upload succeeded, otherwise the local path
+
+**After ingestion completes:**
+- If S3 upload was successful, the local file is deleted (it was only needed for parsing)
+- If S3 is not configured or the upload failed, the local file is kept as the permanent store
+
+The split is not dev vs prod — it's purely based on whether `S3_BUCKET` is set. LocalStack (`LOCALSTACK_ENDPOINT=http://localhost:4567`) lets you run the same S3 code path locally without a real bucket.
+
+On delete, `lib/storage.js` checks whether `file_path` is an absolute/relative local path or an S3 key and calls the appropriate delete.
 
 ---
 
